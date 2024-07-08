@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,6 @@ namespace JDCookie
         {
             InitializeComponent();
             InitPhone();
-            lbPhone.SelectedIndex = 0;
         }
 
         private async void FrmMain_Load(object sender, EventArgs e)
@@ -32,13 +32,25 @@ namespace JDCookie
         private void InitPhone()
         {
             lbPhone.Items.Clear();
-            lbPhone.Items.Add("13854236663");
-            lbPhone.Items.Add("13026525330");
-            lbPhone.Items.Add("17568914267");
-            lbPhone.Items.Add("17568934267");
-            lbPhone.Items.Add("18866488319");
-            lbPhone.Items.Add("13708967268");
-            lbPhone.Items.Add("13969776221");
+
+            // 方法1 (修改添加手机号需要重新生成exe)
+            // lbPhone.Items.Add("");
+
+            // 方法2 (修改添加手机号只需编辑config.txt文件即可)
+            string configDir = Path.Combine(Environment.CurrentDirectory, "config.txt");
+            if (File.Exists(configDir))
+            {
+                var lines = File.ReadAllLines(configDir);
+                foreach (string line in lines)
+                {
+                    lbPhone.Items.Add(line);
+                }
+            }
+            
+
+            if (lbPhone.Items.Count > 0)
+                lbPhone.SelectedIndex = 0;
+
         }
 
         private async void GetCookie()
@@ -82,11 +94,14 @@ namespace JDCookie
 
         private void BtnFill_Click(object sender, EventArgs e)
         {
-            Clipboard.SetText(lbPhone.Text + "");
-            wb.CoreWebView2.ExecuteScriptAsync(
-            "var phone = document.querySelector('input[placeholder=\"请输入手机号\"]');phone.dispatchEvent(new Event('focus'));phone.value = " 
-            + lbPhone.Text +
-            ";phone.dispatchEvent(new Event('input'));phone.dispatchEvent(new Event('blur'));var check = document.querySelector('input.policy_tip-checkbox');if(!check.checked);check.click();");
+            if (!string.IsNullOrEmpty(lbPhone.Text))
+            {
+                Clipboard.SetText(lbPhone.Text + "");
+                wb.CoreWebView2.ExecuteScriptAsync(
+                "var phone = document.querySelector('input[placeholder=\"请输入手机号\"]');phone.dispatchEvent(new Event('focus'));phone.value = " 
+                + lbPhone.Text +
+                ";phone.dispatchEvent(new Event('input'));phone.dispatchEvent(new Event('blur'));var check = document.querySelector('input.policy_tip-checkbox');if(!check.checked);check.click();");
+            }
         }
     }
 }
